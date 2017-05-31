@@ -1,0 +1,96 @@
+# This is the production settings !
+# All settings that do not change across environments should be in 'fir.settings.base'
+from fir.config.base import *
+
+################################################################
+##### Change these values
+################################################################
+
+ALLOWED_HOSTS = ['sectools-dev.itsec.umd.edu']
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'fir',
+        'USER': 'fir',
+        'PASSWORD': 'mysql-password',
+        'HOST': '/tmp/mysql.sock',
+        'PORT': '',
+    }
+}
+'''
+# CAS
+CAS_SERVER_URL = "https://login.umd.edu/cas/"
+CAS_LOGOUT_COMPLETELY = True
+CAS_PROVIDE_URL_TO_LOGOUT = True
+CAS_FORCE_SSL_SERVICE_URL = True
+CAS_ADMIN_PREFIX = '/adminC/'
+CAS_AUTO_CREATE_USER = True
+CAS_REDIRECT_URL = '/dashboard/'
+'''
+# SMTP SETTINGS
+EMAIL_HOST = 'SMTP.DOMAIN.COM'
+EMAIL_PORT = 25
+
+# Uncomment this line to set a different reply-to address when sending alerts
+# REPLY_TO = other@address.com
+
+# SECRET KEY
+SECRET_KEY = 'abbaCDDC'
+
+################################################################
+
+DEBUG = True 
+TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
+
+# List of callables that know how to import templates from various sources.
+# In production, we want to cache templates in memory
+TEMPLATES[0]['OPTIONS']['loaders'] = (
+    ('django.template.loaders.cached.Loader', (
+        'django.template.loaders.filesystem.Loader',
+        'django.template.loaders.app_directories.Loader',
+    )),
+)
+
+LOGGING = {
+    'version': 1,
+    'formatters': {
+        'verbose': {
+            'format': '%(asctime)s: %(module)s %(filename)s:%(lineno)d(%(funcName)s)\n%(message)s'
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'errors.log'),
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}
+
+# attempt to fix login error "unknown reasons" according to
+# an answer provided on stackoverflow:
+# http://stackoverflow.com/questions/36967439/django-login-fails-with-valueerror-unknown-reasons
+PASSWORD_HASHERS = [
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
+    'django.contrib.auth.hashers.BCryptPasswordHasher',
+    'django.contrib.auth.hashers.SHA1PasswordHasher',
+    'django.contrib.auth.hashers.CryptPasswordHasher',
+]
+
+# CAS
+AUTHENTICATION_BACKENDS = (
+    'cas.backends.CASBackend',
+    'django.contrib.auth.backends.ModelBackend',
+)

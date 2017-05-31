@@ -172,6 +172,17 @@ class IncidentCategory(models.Model):
     def __unicode__(self):
         return self.name
 
+'''
+class IPAddress(models.Model):
+    address = GenericIPAddressField(null=True, blank=True)
+
+    class Meta:
+        verbose_name_plural = "IP Addresses"
+
+    def __unicode__(self):
+        return self.address
+'''
+
 # Core models ================================================================
 
 @link_to(File)
@@ -193,6 +204,11 @@ class Incident(FIRModel, models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=_("Open"))
     opened_by = models.ForeignKey(User)
     confidentiality = models.IntegerField(choices=CONFIDENTIALITY_LEVEL, default='1')
+
+    ''' Experiment Begin '''
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    ip_sortable = models.BigIntegerField(null=True, blank=True)
+    ''' Experiment End '''
 
     def __unicode__(self):
         return self.subject
@@ -252,6 +268,10 @@ class Incident(FIRModel, models.Model):
             for c in coms:
                 data += "\n" + c.comment
 
+        ''' Experiment begin '''
+        if str(self.ip_address) not in data:
+           data += "\n" + self.ip_address
+        ''' Experiment end '''
         found_artifacts = artifacts.find(data)
 
         artifact_list = []
@@ -419,6 +439,11 @@ class IncidentTemplate(models.Model):
     actor = models.ForeignKey(Label, limit_choices_to={'group__name': 'actor'}, related_name='+', blank=True, null=True)
     plan = models.ForeignKey(Label, limit_choices_to={'group__name': 'plan'}, related_name='+', blank=True, null=True)
 
+    ''' Experiment Begin '''
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    ip_sortable = models.BigIntegerField(null=True, blank=True)
+    ''' Experiment End '''
+
     def __unicode__(self):
         return self.name
 
@@ -439,12 +464,21 @@ def refresh_incident(sender, instance, **kwargs):
 def comment_new_incident(sender, instance, created, **kwargs):
     if created:
         Comments.objects.create(
-            comment='Incident opened',
+            #comment='Incident opened' if not instance.ip_address else ('Incident opened. IP: ' + instance.ip_address),
+            comment = 'Incident opened',
             action=Label.objects.get(name='Opened'),
             incident=instance,
             opened_by=instance.opened_by,
             date=instance.date,
         )
+
+# Idea: use receiver post_save to convert ip_address field into a sortable BigInteger field for the dashboard
+@receiver(post_save, sender=Incident)
+def ip_to_sortable(sender, instance, created, **kwargs):
+   if instance.ip_address:
+      parts = instance.ip_address.split(".")
+      sortable = (int(parts[0]) * 16777216) + (int(parts[1]) * 65536) + (int(parts[2]) * 256) + int(parts[3])
+      instance.ip_sortable = sortable
 
 # Automatically log actions
 

@@ -95,6 +95,7 @@ def user_login(request):
         return render(request, 'incidents/login.html')
 
 
+
 def user_logout(request):
     logout(request)
     request.session.flush()
@@ -557,7 +558,7 @@ def search(request):
             if query_string != ['']:
                 q_other = Q()
                 for i in other:
-                    q_other &= (Q(subject__icontains=i) | Q(description__icontains=i) | Q(comments__comment__icontains=i))
+                    q_other &= (Q(subject__icontains=i) | Q(description__icontains=i) | Q(comments__comment__icontains=i) | Q(ip_address__icontains=i))
 
             q = (q & q_other)
 
@@ -567,7 +568,7 @@ def search(request):
 
             order_by = order_param
 
-            if order_by not in ['date', 'subject', 'category', 'bl', 'severity', 'status', 'opened_by', 'detection', 'actor', 'confidentiality']:
+            if order_by not in ['date', 'subject', 'category', 'bl', 'severity', 'status', 'opened_by', 'detection', 'actor', 'confidentiality', 'ip_sortable']:
                 order_by = 'date'
 
             if order_by == "category":
@@ -1980,7 +1981,15 @@ def dashboard_open(request):
 @login_required
 @user_passes_test(is_incident_handler)
 def dashboard_blocked(request):
-    return incident_display(request, Q(status='B'))
+    incident_list = Incident.objects.filter(status='B').annotate(Max('comments__date')).order_by('comments__date__max')[:20]
+
+    return render(request, 'events/table.html', {
+            'incident_list': incident_list,
+            'incident_view': True,
+            'order_param': 'last_action',
+            'asc': 'true'
+        }) 
+    #return incident_display(request, Q(status='B'))
 
 
 @login_required

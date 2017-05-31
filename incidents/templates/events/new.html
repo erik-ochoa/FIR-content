@@ -73,6 +73,17 @@ $(document).ready(function() {
 								{% include 'events/_form_errors.html' with errors=form.concerned_business_lines.errors %}
 							</div>
 						</div>
+
+                        <!- Experimenting begins ->
+                        <div class="row">
+                            <div class="col-sm-6 form-group{% if form.ip_address.errors%} has-error{%endif%}">
+                                <label id="id_ip_address">{% trans "IP Address" %}</label>
+                                {{ form.ip_address|add_css_class:"form-control" }}
+                                {% include 'events/_form_errors.html' with errors=form.ip_address.errors %}
+                            </div>
+                        </div>
+                        <!- Experimenting ends ->
+
 						<div class="row">
 							<div class="col-sm-6 form-group{% if form.category.errors%} has-error{%endif%}">
 								<label id="id_category">{% trans "Category" %}</label>

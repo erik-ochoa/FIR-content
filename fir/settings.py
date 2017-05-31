@@ -31,3 +31,4 @@ try:
     from fir.config.dev import *
 except ImportError:
     pass
+

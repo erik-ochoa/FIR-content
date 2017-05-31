@@ -14,6 +14,11 @@
             {% trans "Plan" as t_plan %}
             {% trans "Lvl" as t_lvl %}
             {% trans "IH" as t_ih %}
+
+            <!-- Experiment start -->
+            {% trans "IP" as t_ip_address %}
+            <!-- Experiment end -->
+
             {% trans "None" as t_none %}
 				<tr>
                     {% if incident_show_id %}<th>ID</th>{% endif %}
@@ -32,6 +37,11 @@
 						{% include 'events/column.html' with name=t_lvl field='confidentiality' %}
 					{% endif %}
 					{% include 'events/column.html' with name=t_ih field='opened_by' %}
+
+               <!-- Experiment start; field is the one used to sort by -->
+               {% include 'events/column.html' with name=t_ip_address field='ip_sortable' %}
+               <!-- Experiment end -->
+
 					<th>{%  trans "Edit" %}</th>
 				</tr>
 			</thead>
@@ -77,6 +87,11 @@
 						{% endif %}
 
 						<td>{{ incident.opened_by }}</td>
+
+                  <!-- Experiment start; the field that's displayed on dashboard -->
+                  <td>{{ incident.ip_address }}</td>
+                  <!-- Experiment end -->
+
 						<td>
 							<a href="{% url 'incidents:edit' incident.id %}"><span class='glyphicon glyphicon-pencil'></span></a>
 						</td>

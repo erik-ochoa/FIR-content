@@ -101,6 +101,13 @@
 					<p>{{ event.description|safe }}</p>
 				</div>
 
+            <!-- Experiment start -->
+            <div class='widget' id='ip_address'>
+                <h4 class='widget'>{% trans "IP Address" %}</h4>
+                <p>{{ event.ip_address|safe }}</p>
+            </div>
+            <!-- Experiment end -->
+
 				{% plugin_point 'details_main' %}
 			</div>
 
